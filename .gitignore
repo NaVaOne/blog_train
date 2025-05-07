@@ -1,0 +1,64 @@
+# Python
+pycache/
+*.py[cod]
+
+# Виртуальное окружение (пример для venv)
+venv/
+env/
+ENV/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Медиафайлы (загруженные пользователями изображения и др.)
+media/
+uploads/
+
+# Статические файлы (их обычно собирают отдельно и не хранят в репозитории)
+staticfiles/
+
+# Файлы настроек окружения
+.env
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# Логи
+*.log
+
+# Кэш
+*.sqlite3
+*.pyc
+*.pyo
+*.pyd
+pycache/
+*.swp
+*.swo
+*.DS_Store
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# Django migrations (в зависимости от команды можно и хранить, но часто игнорируют)
+*/migrations/*.py
+*/migrations/*.py[cod]
+!*/migrations/__init__.py
+*/migrations/__pycache__/
+*/migrations/.pyc
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# Redis dump files (если есть)
+dump.rdb
