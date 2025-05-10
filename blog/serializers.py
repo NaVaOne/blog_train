@@ -1,7 +1,5 @@
 from rest_framework import serializers
 from .models import Post,Tag, Comment, Like
-from markdown import markdown
-from django.utils.text import slugify
 
 
 # class CategorySerializer(serializers.ModelSerializer):
@@ -24,7 +22,7 @@ class PostSerializer(serializers.ModelSerializer):
         child=serializers.CharField(max_length=50),
         write_only=True,
         required=False,
-        default=list  # Явно указываем значение по умолчанию
+        default=list  
     )
 
     class Meta:
@@ -38,20 +36,15 @@ class PostSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Достаём теги (по умолчанию пустой список)
         tags_data = validated_data.pop('tags', [])  
-        
-        # Создаём пост БЕЗ тегов
         post = Post.objects.create(**validated_data)
 
-        # Обрабатываем теги только если они переданы
         if tags_data:
             tag_instances = []
             for tag_name in tags_data:
                 tag_name = tag_name.strip()
-                if tag_name:  # Игнорируем пустые строки
+                if tag_name:  
                     tag, _ = Tag.objects.get_or_create(name=tag_name,)
                     tag_instances.append(tag)
-            
-            # Добавляем теги к посту
             post.tags.add(*tag_instances)
 
         return post

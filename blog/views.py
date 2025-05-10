@@ -1,19 +1,19 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets,mixins ,filters, status
-from .models import Post, Comment, Like
-from .serializers import PostSerializer, CommentSerializer, LikeSerializer
+from rest_framework import viewsets, mixins, filters, status
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db import transaction
+
+from .models import Post, Comment, Like
+from .serializers import PostSerializer, CommentSerializer, LikeSerializer
 from .permissions import AuthorOrReadOnly
 from notifications.tasks import send_like_notification
-from rest_framework.decorators import action
-# Create your views here.
 
 
 class PostViewSet(viewsets.ModelViewSet):
-    queryset = Post.objects.all()
+    queryset = Post.objects.select_related('author').prefetch_related('tags').all()
     serializer_class = PostSerializer
     permission_classes = [AuthorOrReadOnly,]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
@@ -37,7 +37,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         post_id = self.kwargs['post_pk']
         serializer.save(
             author=self.request.user,
-            post_id=post_id  # post_id берётся из URL
+            post_id=post_id  
         )
 
     def destroy(self, request, *args, **kwargs):
@@ -62,6 +62,7 @@ class LikeViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,viewsets.Generi
         # Фильтруем лайки по post_pk из URL
         return Like.objects.filter(post_id=self.kwargs['post_pk'])
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         # post_pk берётся из URL автоматически
         post = get_object_or_404(Post, pk=self.kwargs['post_pk'])
@@ -81,6 +82,7 @@ class LikeViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,viewsets.Generi
             LikeSerializer(like).data,
             status=status.HTTP_201_CREATED
         )
+    @transaction.atomic
     @action(detail=False, methods=['delete'], url_path='remove')
     def delete_like(self, request, *args, **kwargs):
         like = get_object_or_404(Like, user=request.user, post_id=self.kwargs['post_pk'])
